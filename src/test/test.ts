@@ -1,9 +1,7 @@
 import configTest from './configTest';
-import util from 'util';
-import json5 from 'json5';
+import debug from 'debug';
+import path from 'path';
+const d = debug(path.basename(__filename));
 
-// console.log(util.inspect(configTest,true,8,true));
-
-// console.log(configTest._toJson());
-console.log(configTest.server.port);
+d(configTest.server.port);
 

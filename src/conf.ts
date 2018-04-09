@@ -1,9 +1,11 @@
 /** 
  * 读取配置单个文件
  */
-import path from 'path';
 import fs from 'fs';
 import json5 from 'json5';
+import debug from 'debug';
+import path from 'path';
+const d = debug(path.basename(__filename));
 
 /**
  * 加载配置文件
@@ -32,9 +34,9 @@ function loadConfigFile(fileName: string, configDefine: any): any {
           configDefine.__delaySaveFunc = null;
           fs.writeFile(fileName, json5.stringify(configDefine, undefined, 2), (err) => {
             if (err) {
-              console.log(`save config file failed:${fileName}`, err.message);
+              d(`save config file failed:${fileName}`, err.message);
             } else {
-              console.log(`save config file sucessed:${fileName}`);
+              d(`save config file sucessed:${fileName}`);
             }
           });
         };

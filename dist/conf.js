@@ -3,8 +3,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+/**
+ * 读取配置单个文件
+ */
 const fs_1 = __importDefault(require("fs"));
 const json5_1 = __importDefault(require("json5"));
+const debug_1 = __importDefault(require("debug"));
+const path_1 = __importDefault(require("path"));
+const d = debug_1.default(path_1.default.basename(__filename));
 /**
  * 加载配置文件
  * @param fileName 配置文件名
@@ -32,10 +38,10 @@ function loadConfigFile(fileName, configDefine) {
                     configDefine.__delaySaveFunc = null;
                     fs_1.default.writeFile(fileName, json5_1.default.stringify(configDefine, undefined, 2), (err) => {
                         if (err) {
-                            console.log(`save config file failed:${fileName}`, err.message);
+                            d(`save config file failed:${fileName}`, err.message);
                         }
                         else {
-                            console.log(`save config file sucessed:${fileName}`);
+                            d(`save config file sucessed:${fileName}`);
                         }
                     });
                 };

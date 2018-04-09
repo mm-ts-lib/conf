@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const path_1 = __importDefault(require("path"));
 const conf_1 = __importDefault(require("../conf"));
 // 获取配置文件的绝对路径
-const configFile = {
+exports.default = conf_1.default(path_1.default.resolve('./test.json5'), {
     upgrade: {
         localGithubRepos: '/Users/zhufeng/frame3Git/github_frame3_packages',
         src: 'github',
@@ -25,6 +25,5 @@ const configFile = {
     test: {
         testKey: '778782386'
     }
-};
-exports.default = conf_1.default(path_1.default.resolve('./test.json5'), configFile);
+});
 //# sourceMappingURL=configTest.js.map

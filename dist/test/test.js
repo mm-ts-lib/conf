@@ -4,7 +4,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const configTest_1 = __importDefault(require("./configTest"));
-// console.log(util.inspect(configTest,true,8,true));
-// console.log(configTest._toJson());
-console.log(configTest_1.default.server.port);
+const debug_1 = __importDefault(require("debug"));
+const path_1 = __importDefault(require("path"));
+const d = debug_1.default(path_1.default.basename(__filename));
+d(configTest_1.default.server.port);
 //# sourceMappingURL=test.js.map
