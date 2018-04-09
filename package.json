@@ -1,0 +1,17 @@
+{
+  "name": "conf",
+  "version": "1.0.0",
+  "description": "config file loader for typescript",
+  "main": "dist/conf.js",
+  "types": "src/conf.ts",
+  "repository": "git@github.com:mm-ts-lib/conf.git",
+  "author": "zhufeng <zhfjyq@163.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/json5": "^0.0.29",
+    "@types/node": "^9.6.2"
+  },
+  "dependencies": {
+    "json5": "^1.0.1"
+  }
+}
