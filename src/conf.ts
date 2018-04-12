@@ -16,7 +16,7 @@ function loadConfigFile(fileName: string, configDefine: any): any {
   const srcObject = json5.parse(fs.readFileSync(fileName, 'utf8'));
   // 配置对象
   const configObject: any = {};
-  configObject._toJson = () => {
+  configObject.toJson = () => {
     return json5.stringify(configDefine, undefined, 2);
   }
   // 配置延迟保存方法，防止多次保存
@@ -95,7 +95,7 @@ function loadConfigFile(fileName: string, configDefine: any): any {
 }
 
 type _ToJson_T = {
-  _toJson: () => string;
+  toJson: () => string;
 }
 
 /**
