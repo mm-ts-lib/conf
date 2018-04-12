@@ -4,6 +4,7 @@
   "private": false,
   "description": "config file loader for typescript",
   "main": "src/conf.ts",
+  "types": "src/conf.ts",
   "repository": "git@github.com:mm-ts-lib/conf.git",
   "author": "zhufeng <zhfjyq@163.com>",
   "license": "MIT",
