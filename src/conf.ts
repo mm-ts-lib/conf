@@ -5,7 +5,7 @@ import fs from 'fs';
 import json5 from 'json5';
 import debug from 'debug';
 import path from 'path';
-const d = debug(path.basename(__filename));
+const _d = debug(path.basename(__filename));
 
 /**
  * 加载配置文件
@@ -13,7 +13,13 @@ const d = debug(path.basename(__filename));
  * @param configDefine 配置定义对象
  */
 function loadConfigFile(fileName: string, configDefine: any): any {
-  const srcObject = json5.parse(fs.readFileSync(fileName, 'utf8'));
+
+  let srcObject = {};
+  try {
+    srcObject = json5.parse(fs.readFileSync(fileName, 'utf8'));
+  } catch (e) {
+    _d('config file open fail:', fileName, e.message);
+  }
   // 配置对象
   const configObject: any = {};
   configObject.toJson = () => {
@@ -34,9 +40,9 @@ function loadConfigFile(fileName: string, configDefine: any): any {
           configDefine.__delaySaveFunc = null;
           fs.writeFile(fileName, json5.stringify(configDefine, undefined, 2), (err) => {
             if (err) {
-              d(`save config file failed:${fileName}`, err.message);
+              _d(`save config file failed:${fileName}`, err.message);
             } else {
-              d(`save config file sucessed:${fileName}`);
+              _d(`save config file sucessed:${fileName}`);
             }
           });
         };

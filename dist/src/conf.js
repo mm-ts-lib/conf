@@ -10,14 +10,20 @@ const fs_1 = __importDefault(require("fs"));
 const json5_1 = __importDefault(require("json5"));
 const debug_1 = __importDefault(require("debug"));
 const path_1 = __importDefault(require("path"));
-const d = debug_1.default(path_1.default.basename(__filename));
+const _d = debug_1.default(path_1.default.basename(__filename));
 /**
  * 加载配置文件
  * @param fileName 配置文件名
  * @param configDefine 配置定义对象
  */
 function loadConfigFile(fileName, configDefine) {
-    const srcObject = json5_1.default.parse(fs_1.default.readFileSync(fileName, 'utf8'));
+    let srcObject = {};
+    try {
+        srcObject = json5_1.default.parse(fs_1.default.readFileSync(fileName, 'utf8'));
+    }
+    catch (e) {
+        _d('config file open fail:', fileName, e.message);
+    }
     // 配置对象
     const configObject = {};
     configObject.toJson = () => {
@@ -38,10 +44,10 @@ function loadConfigFile(fileName, configDefine) {
                     configDefine.__delaySaveFunc = null;
                     fs_1.default.writeFile(fileName, json5_1.default.stringify(configDefine, undefined, 2), (err) => {
                         if (err) {
-                            d(`save config file failed:${fileName}`, err.message);
+                            _d(`save config file failed:${fileName}`, err.message);
                         }
                         else {
-                            d(`save config file sucessed:${fileName}`);
+                            _d(`save config file sucessed:${fileName}`);
                         }
                     });
                 };
