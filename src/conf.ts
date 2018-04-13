@@ -100,7 +100,7 @@ function loadConfigFile(fileName: string, configDefine: any): any {
   return configObject;
 }
 
-type _ToJson_T = {
+export type _ToJson_T = {
   toJson: () => string;
 }
 
