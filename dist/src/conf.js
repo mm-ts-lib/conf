@@ -9,8 +9,12 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const fs_1 = __importDefault(require("fs"));
 const json5_1 = __importDefault(require("json5"));
 const debug_1 = __importDefault(require("debug"));
+const mkdirp_1 = __importDefault(require("mkdirp"));
 const path_1 = __importDefault(require("path"));
 const _d = debug_1.default(path_1.default.basename(__filename));
+// {
+//   (): void
+// };
 /**
  * 加载配置文件
  * @param fileName 配置文件名
@@ -26,8 +30,23 @@ function loadConfigFile(fileName, configDefine) {
     }
     // 配置对象
     const configObject = {};
-    configObject.toJson = () => {
+    // 保存文件方法
+    configObject._toJson = () => {
         return json5_1.default.stringify(configDefine, undefined, 2);
+    };
+    // 重新加载方法
+    configObject._reload = () => {
+        try {
+            _d('reload config file :', fileName);
+            srcObject = json5_1.default.parse(fs_1.default.readFileSync(fileName, 'utf8'));
+            // if (srcObject) { 
+            //   _applyDeepObject(configDefine, srcObject, configObject, configDefine);
+            // }
+        }
+        catch (e) {
+            _d('config file open fail:', fileName, e);
+        }
+        // return json5.stringify(configDefine, undefined, 2);
     };
     // 配置延迟保存方法，防止多次保存
     Object.defineProperty(configDefine, '__delaySaveFunc', {
@@ -42,6 +61,11 @@ function loadConfigFile(fileName, configDefine) {
             if (configDefine.__delaySaveFunc === null) {
                 configDefine.__delaySaveFunc = () => {
                     configDefine.__delaySaveFunc = null;
+                    const dirPath = path_1.default.dirname(fileName);
+                    if (!fs_1.default.existsSync(dirPath)) {
+                        _d('create new config dir:', dirPath);
+                        mkdirp_1.default.sync(dirPath);
+                    }
                     fs_1.default.writeFile(fileName, json5_1.default.stringify(configDefine, undefined, 2), (err) => {
                         if (err) {
                             _d(`save config file failed:${fileName}`, err.message);
@@ -66,7 +90,8 @@ function loadConfigFile(fileName, configDefine) {
         Object.keys(valueObj).forEach((key) => {
             // console.log('---', key, typeof valueObj, typeof srcObj);
             // 定义Obj
-            if (typeof valueObj[key] === 'object') {
+            const value = valueObj[key];
+            if (typeof value === 'object' && Object.keys(value).length > 0) {
                 // 递归遍历对象
                 outObj[key] = {};
                 if (typeof srcObj === 'object' && srcObj !== null) {
@@ -80,10 +105,12 @@ function loadConfigFile(fileName, configDefine) {
                 // 定义值对象
                 // console.log('-value-', key, valueObj[key]);
                 Object.defineProperty(outObj, key, {
+                    configurable: true,
                     get: () => {
                         return valueObj[key];
                     },
                     set: (newValue) => {
+                        _d('SET:', key);
                         valueObj[key] = newValue;
                         // 延迟保存
                         rootObj.__save();

@@ -4,9 +4,15 @@
 import fs from 'fs';
 import json5 from 'json5';
 import debug from 'debug';
+import mkdirp from 'mkdirp';
 import path from 'path';
 const _d = debug(path.basename(__filename));
 
+type IWatchCallback = { (): void };
+
+// {
+//   (): void
+// };
 /**
  * 加载配置文件
  * @param fileName 配置文件名 
@@ -20,11 +26,28 @@ function loadConfigFile(fileName: string, configDefine: any): any {
   } catch (e) {
     _d('config file open fail:', fileName, e.message);
   }
+
+
   // 配置对象
   const configObject: any = {};
-  configObject.toJson = () => {
+  // 保存文件方法
+  configObject._toJson = () => {
     return json5.stringify(configDefine, undefined, 2);
   }
+  // 重新加载方法
+  configObject._reload = () => {
+    try {
+      _d('reload config file :', fileName);
+      srcObject = json5.parse(fs.readFileSync(fileName, 'utf8'));
+      // if (srcObject) { 
+      //   _applyDeepObject(configDefine, srcObject, configObject, configDefine);
+      // }
+    } catch (e) {
+      _d('config file open fail:', fileName, e);
+    }
+    // return json5.stringify(configDefine, undefined, 2);
+  }
+
   // 配置延迟保存方法，防止多次保存
   Object.defineProperty(configDefine, '__delaySaveFunc', {
     enumerable: false,
@@ -38,6 +61,11 @@ function loadConfigFile(fileName: string, configDefine: any): any {
       if (configDefine.__delaySaveFunc === null) {
         configDefine.__delaySaveFunc = () => {
           configDefine.__delaySaveFunc = null;
+          const dirPath = path.dirname(fileName);
+          if (!fs.existsSync(dirPath)) {
+            _d('create new config dir:', dirPath);
+            mkdirp.sync(dirPath);
+          }
           fs.writeFile(fileName, json5.stringify(configDefine, undefined, 2), (err) => {
             if (err) {
               _d(`save config file failed:${fileName}`, err.message);
@@ -62,7 +90,8 @@ function loadConfigFile(fileName: string, configDefine: any): any {
     Object.keys(valueObj).forEach((key) => {
       // console.log('---', key, typeof valueObj, typeof srcObj);
       // 定义Obj
-      if (typeof valueObj[key] === 'object') {
+      const value = valueObj[key];
+      if (typeof value === 'object' && Object.keys(value).length > 0) {
         // 递归遍历对象
         outObj[key] = {};
         if (typeof srcObj === 'object' && srcObj !== null) {
@@ -74,10 +103,12 @@ function loadConfigFile(fileName: string, configDefine: any): any {
         // 定义值对象
         // console.log('-value-', key, valueObj[key]);
         Object.defineProperty(outObj, key, {
+          configurable: true,
           get: () => {
             return valueObj[key];
           },
           set: (newValue) => {
+            _d('SET:', key);
             valueObj[key] = newValue;
             // 延迟保存
             rootObj.__save();
@@ -100,14 +131,15 @@ function loadConfigFile(fileName: string, configDefine: any): any {
   return configObject;
 }
 
-export type _ToJson_T = {
-  toJson: () => string;
+export interface IConfigExtend {
+  _toJson(): string;
+  _reload(): void,
 }
 
 /**
  * 导出配置文件加载函数
  */
-export default function <T>(fileName: string, configDefine: T): T & _ToJson_T {
+export default function <T>(fileName: string, configDefine: T): T & IConfigExtend {
   // 从配置文件中加载配置
   return loadConfigFile(fileName, configDefine);
 }; 

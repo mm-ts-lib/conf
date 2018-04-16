@@ -4,7 +4,7 @@
     src: 'sssssss',
     server: {
       host: 'abc',
-      port: 3000,
+      port: 9038,
       user: {
         name: 'zf',
         pwd: '123456',
@@ -12,9 +12,12 @@
     },
   },
   server: {
-    port: 9999,
+    port: 10032,
   },
   test: {
     testKey: '111',
+  },
+  objTest: {
+    ppp: 10032,
   },
 }

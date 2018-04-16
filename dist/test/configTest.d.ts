@@ -1,3 +1,4 @@
+import * as conf from '../src/conf';
 declare const _default: {
     upgrade: {
         localGithubRepos: string;
@@ -17,7 +18,6 @@ declare const _default: {
     test: {
         testKey: string;
     };
-} & {
-    toJson: () => string;
-};
+    objTest: {};
+} & conf.IConfigExtend;
 export default _default;

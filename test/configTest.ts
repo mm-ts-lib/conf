@@ -1,9 +1,10 @@
 import path from 'path';
-import conf from '../src/conf'
+// import conf from '../src/conf'
+import * as conf from '../src/conf';
 const CONFIG_FILE = path.resolve(__dirname, 'test.json5');
 
 // 获取配置文件的绝对路径
-export default conf(CONFIG_FILE, {
+export default conf.default(CONFIG_FILE, {
   upgrade: {
     localGithubRepos: '/Users/zhufeng/frame3Git/github_frame3_packages',
     src: 'github',
@@ -21,6 +22,7 @@ export default conf(CONFIG_FILE, {
   },
   test: {
     testKey: '778782386'
-  }
+  },
+  objTest: {}
 });
 
