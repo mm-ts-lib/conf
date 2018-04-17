@@ -1,6 +1,6 @@
 {
   "name": "@tslib/conf",
-  "version": "1.0.18",
+  "version": "1.0.19",
   "private": false,
   "description": "config file loader for typescript",
   "main": "dist/src/conf.js",
@@ -11,11 +11,11 @@
   "devDependencies": {},
   "dependencies": {
     "@types/debug": "^0.0.30",
-    "@types/json5": "^0.0.29",
+    "@types/lodash": "^4.14.107",
     "@types/mkdirp": "^0.5.2",
     "@types/node": "^9.6.2",
     "debug": "^3.1.0",
-    "json5": "^1.0.1",
+    "lodash": "^4.17.5",
     "mkdirp": "^0.5.1"
   },
   "scripts": {
