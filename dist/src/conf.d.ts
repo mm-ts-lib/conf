@@ -1,8 +1,8 @@
-export interface IConfigExtend {
-    _toJson(): string;
-    _reload(): void;
+export interface IConfig {
+    _load(): void;
+    _save(): void;
 }
 /**
  * 导出配置文件加载函数
  */
-export default function <T>(fileName: string, configDefine: T): T & IConfigExtend;
+export declare function conf<T>(fileName: string, configDefine: T): T & IConfig;

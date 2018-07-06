@@ -7,135 +7,77 @@ Object.defineProperty(exports, "__esModule", { value: true });
  * 读取配置单个文件
  */
 const fs_1 = __importDefault(require("fs"));
-const json5_1 = __importDefault(require("json5"));
 const debug_1 = __importDefault(require("debug"));
+const json5_1 = __importDefault(require("json5"));
 const mkdirp_1 = __importDefault(require("mkdirp"));
 const path_1 = __importDefault(require("path"));
-const _d = debug_1.default(path_1.default.basename(__filename));
-// {
-//   (): void
-// };
+const lodash_1 = __importDefault(require("lodash"));
+const _d = debug_1.default('@tslib/argv:' + path_1.default.basename(__filename));
 /**
  * 加载配置文件
  * @param fileName 配置文件名
  * @param configDefine 配置定义对象
  */
 function loadConfigFile(fileName, configDefine) {
-    let srcObject = {};
-    try {
-        srcObject = json5_1.default.parse(fs_1.default.readFileSync(fileName, 'utf8'));
-    }
-    catch (e) {
-        _d('config file open fail:', fileName, e.message);
-    }
-    // 配置对象
-    const configObject = {};
-    // 保存文件方法
-    configObject._toJson = () => {
-        return json5_1.default.stringify(configDefine, undefined, 2);
-    };
-    // 重新加载方法
-    configObject._reload = () => {
-        try {
-            _d('reload config file :', fileName);
-            srcObject = json5_1.default.parse(fs_1.default.readFileSync(fileName, 'utf8'));
-            // if (srcObject) { 
-            //   _applyDeepObject(configDefine, srcObject, configObject, configDefine);
-            // }
+    let configObject = {};
+    function _saveConfig() {
+        // 首先确认目标目录存在
+        const dirName = path_1.default.dirname(fileName);
+        if (!fs_1.default.existsSync(dirName)) {
+            mkdirp_1.default.sync(dirName);
         }
-        catch (e) {
-            _d('config file open fail:', fileName, e);
-        }
-        // return json5.stringify(configDefine, undefined, 2);
-    };
-    // 配置延迟保存方法，防止多次保存
-    Object.defineProperty(configDefine, '__delaySaveFunc', {
-        enumerable: false,
-        writable: true,
-        value: null
-    });
-    // 定义保存函数
-    Object.defineProperty(configDefine, '__save', {
-        enumerable: false,
-        value: () => {
-            if (configDefine.__delaySaveFunc === null) {
-                configDefine.__delaySaveFunc = () => {
-                    configDefine.__delaySaveFunc = null;
-                    const dirPath = path_1.default.dirname(fileName);
-                    if (!fs_1.default.existsSync(dirPath)) {
-                        _d('create new config dir:', dirPath);
-                        mkdirp_1.default.sync(dirPath);
-                    }
-                    fs_1.default.writeFile(fileName, json5_1.default.stringify(configDefine, undefined, 2), (err) => {
-                        if (err) {
-                            _d(`save config file failed:${fileName}`, err.message);
-                        }
-                        else {
-                            _d(`save config file sucessed:${fileName}`);
-                        }
-                    });
-                };
-                setImmediate(configDefine.__delaySaveFunc);
-            }
-        }
-    });
-    /**
-     * 递归深度合并配置对象
-     * @param valueObj 保存值的对象
-     * @param srcObj 读取的源对象
-     * @param outObj 输出对象
-     * @param rootObj 跟对象
-     */
-    function _applyDeepObject(valueObj, srcObj, outObj, rootObj) {
-        Object.keys(valueObj).forEach((key) => {
-            // console.log('---', key, typeof valueObj, typeof srcObj);
-            // 定义Obj
-            const value = valueObj[key];
-            if (typeof value === 'object' && Object.keys(value).length > 0) {
-                // 递归遍历对象
-                outObj[key] = {};
-                if (typeof srcObj === 'object' && srcObj !== null) {
-                    _applyDeepObject(valueObj[key], srcObj[key], outObj[key], rootObj);
-                }
-                else {
-                    _applyDeepObject(valueObj[key], undefined, outObj[key], rootObj);
-                }
+        // 保存配置文件
+        fs_1.default.writeFile(fileName, JSON.stringify(configObject), err => {
+            if (err) {
+                _d('write config File Error:', fileName, err.message);
             }
             else {
-                // 定义值对象
-                // console.log('-value-', key, valueObj[key]);
-                Object.defineProperty(outObj, key, {
-                    configurable: true,
-                    get: () => {
-                        return valueObj[key];
-                    },
-                    set: (newValue) => {
-                        _d('SET:', key);
-                        valueObj[key] = newValue;
-                        // 延迟保存
-                        rootObj.__save();
-                    }
-                });
-                // 设置为配置文件值
-                if (typeof srcObj === 'object' && srcObj !== null
-                    && typeof srcObj[key] === typeof valueObj[key]) {
-                    valueObj[key] = srcObj[key];
-                }
+                _d('writeconfig File successed:', fileName);
             }
         });
     }
-    _applyDeepObject(configDefine, srcObject, configObject, configDefine);
-    // 加载完成保存缺省实际值
-    configDefine.__save();
+    // 定义保存函数
+    // 定义保存函数
+    Object.defineProperty(configObject, '_save', {
+        enumerable: false,
+        writable: false,
+        configurable: false,
+        value: _saveConfig,
+    });
+    Object.defineProperty(configObject, '_load', {
+        enumerable: false,
+        writable: false,
+        configurable: false,
+        value: () => {
+            try {
+                _d('load config file :', fileName);
+                const json = json5_1.default.parse(fs_1.default.readFileSync(fileName, 'utf8'));
+                if (json) {
+                    // 合并缺省配置到配置文件
+                    lodash_1.default.defaultsDeep(json, configDefine);
+                    // 注入配置到配置对象
+                    lodash_1.default.assign(configObject, json);
+                }
+            }
+            catch (e) {
+                _d('config file open fail:', fileName, e.message);
+                // 加载异常，自动合并缺省配置
+                lodash_1.default.defaultsDeep(configObject, configDefine);
+            }
+            // 加载完成后保存配置文件
+            _saveConfig();
+        },
+    });
+    // 加载配置
+    configObject._load();
     return configObject;
 }
 /**
  * 导出配置文件加载函数
  */
-function default_1(fileName, configDefine) {
+function conf(fileName, configDefine) {
     // 从配置文件中加载配置
     return loadConfigFile(fileName, configDefine);
 }
-exports.default = default_1;
-;
+exports.conf = conf;
 //# sourceMappingURL=conf.js.map
